@@ -18,7 +18,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ReactLeafletGoogleLayer from "react-leaflet-google-layer";
 import "leaflet-google-places-autocomplete";
-import "../App.css";
+
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 

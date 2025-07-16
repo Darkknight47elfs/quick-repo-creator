@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSatelliteDish, faLocationArrow, faMap, faRoad } from '@fortawesome/free-solid-svg-icons';
 import ReactLeafletGoogleLayer from 'react-leaflet-google-layer';
-import '../App.css';
+
 import axios from 'axios';
 import { API_BASE_URL } from '../apiConfig';
 
