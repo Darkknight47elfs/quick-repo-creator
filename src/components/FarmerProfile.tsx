@@ -233,7 +233,7 @@ const FarmerProfile: React.FC = () => {
               className="object-cover w-full h-full border-4 rounded-full"
               onError={(e) => {
                 console.error("Error loading image:", farmerData.profile_image);
-                e.target.src = "https://placehold.co/150x150";
+                (e.target as HTMLImageElement).src = "https://placehold.co/150x150";
               }}
             />
             <label className="absolute p-1.5 md:p-2 bg-gray-800 rounded-full cursor-pointer bottom-0 md:bottom-2 right-0 md:right-2">
