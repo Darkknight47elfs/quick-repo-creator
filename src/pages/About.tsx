@@ -1,6 +1,6 @@
 import React from 'react';
 
-const About = () => {
+const About: React.FC = () => {
     return (
         <div className="px-6 py-12 about-page">
             <div className="max-w-4xl mx-auto text-center">

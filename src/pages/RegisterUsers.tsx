@@ -1,7 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { API_BASE_URL } from '../apiConfig';
 
-const SuccessModal = ({ message, onClose, isError = false }) => {
+interface SuccessModalProps {
+  message: string;
+  onClose: () => void;
+  isError?: boolean;
+}
+
+interface UserType {
+  value: string;
+  label: string;
+}
+
+interface State {
+  id: number;
+  name: string;
+}
+
+interface District {
+  id: number;
+  name: string;
+}
+
+interface CountryCode {
+  code: string;
+  country: string;
+}
+
+interface FormData {
+  username: string;
+  countryCode: string;
+  phoneNumber: string;
+  state: string;
+  district: string;
+  createPassword: string;
+  verifyPassword: string;
+  krishibhavan: string;
+  padashekaram: string;
+  userType: string;
+}
+
+const SuccessModal: React.FC<SuccessModalProps> = ({ message, onClose, isError = false }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
@@ -22,24 +61,24 @@ const SuccessModal = ({ message, onClose, isError = false }) => {
   );
 };
 
-const RegisterPage = () => {
-  const [userTypes, setUserTypes] = useState([]);
-  const [states, setStates] = useState([]);
-  const [districts, setDistricts] = useState([]);
+const RegisterPage: React.FC = () => {
+  const [userTypes, setUserTypes] = useState<UserType[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Country code options
-  const countryCodes = [
+  const countryCodes: CountryCode[] = [
     { code: "+91", country: "India" },
     { code: "+1", country: "United States" },
     { code: "+44", country: "United Kingdom" },
     { code: "+61", country: "Australia" }
   ];
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     username: "",
     countryCode: "+91",
     phoneNumber: "",
@@ -94,7 +133,7 @@ const RegisterPage = () => {
     fetchData();
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     if (name === "phoneNumber") {
@@ -105,7 +144,7 @@ const RegisterPage = () => {
     }
   };
 
-  const formatErrorMessage = (errorData) => {
+  const formatErrorMessage = (errorData: any): string => {
     if (typeof errorData === 'string') return errorData;
     
     if (Array.isArray(errorData)) {
@@ -135,7 +174,7 @@ const RegisterPage = () => {
     return "Unknown error occurred. Please try again.";
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
@@ -162,7 +201,7 @@ const RegisterPage = () => {
       }
 
       // Prepare registration data
-      const registerData = {
+      const registerData: any = {
         user_name: formData.username,
         phone_number: formData.phoneNumber.startsWith(formData.countryCode) 
           ? formData.phoneNumber 

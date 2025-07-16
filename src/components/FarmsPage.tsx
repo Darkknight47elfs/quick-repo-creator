@@ -1,10 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MapWithDraw from "./MapWithDraw";
 import { API_BASE_URL } from '../apiConfig';
 
+interface SuccessModalProps {
+  message: string;
+  onClose: () => void;
+}
+
+interface Farm {
+  id: string;
+  custom_farm_id: string;
+  rice_type: string;
+  water_source: string;
+  H_start_date: string;
+  acres: string;
+  geojson: any;
+  pdfs?: any[];
+}
+
+interface NewFarm {
+  custom_farm_id: string;
+  rice_type: string;
+  water_source: string;
+  H_start_date: string;
+  acres: string;
+  geojson?: any;
+}
+
 // Success Modal Component
-const SuccessModal = ({ message, onClose }) => {
+const SuccessModal: React.FC<SuccessModalProps> = ({ message, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
@@ -21,14 +46,16 @@ const SuccessModal = ({ message, onClose }) => {
   );
 };
 
-export default function FarmsPage() {
-  const { id  } = useParams();
-  const [farms, setFarms] = useState([]);
-  const [selectedFarm, setSelectedFarm] = useState(null);
-  const [newFarm, setNewFarm] = useState({
+const FarmsPage: React.FC = () => {
+  const { id  } = useParams<{ id: string }>();
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const [newFarm, setNewFarm] = useState<NewFarm>({
+    custom_farm_id: "",
     rice_type: "",
     water_source: "",
     H_start_date: new Date().toISOString().split("T")[0],
+    acres: "",
     geojson: null,
   });
   const [loading, setLoading] = useState(true);
@@ -246,9 +273,11 @@ export default function FarmsPage() {
 
   const resetForm = () => {
     setNewFarm({
+      custom_farm_id: "",
       rice_type: "",
       water_source: "",
       H_start_date: new Date().toISOString().split("T")[0],
+      acres: "",
       geojson: null,
     });
     setSelectedFarm(null);
@@ -259,7 +288,7 @@ export default function FarmsPage() {
     setNewFarm((prevFarm) => ({ ...prevFarm, geojson: polygonGeoJSON }));
   };
 
-  const handleEditFarm = (farm) => {
+  const handleEditFarm = (farm: Farm) => {
     setSelectedFarm(farm);
     setNewFarm(farm);
     setShowForm(true);
@@ -363,6 +392,7 @@ export default function FarmsPage() {
                 setShowForm(false);
                 setSelectedFarm(null);
                 setNewFarm({
+                  custom_farm_id: "",
                   rice_type: "",
                   water_source: "",
                   H_start_date: "",
@@ -517,7 +547,14 @@ export default function FarmsPage() {
   );
 }
 
-function FormField({ label, value, onChange, type = "text" }) {
+interface FormFieldProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+}
+
+const FormField: React.FC<FormFieldProps> = ({ label, value, onChange, type = "text" }) => {
   return (
     <div className="mb-4">
       <label className="block text-sm font-bold text-black">{label}</label>
@@ -529,4 +566,6 @@ function FormField({ label, value, onChange, type = "text" }) {
       />
     </div>
   );
-}
+};
+
+export default FarmsPage;

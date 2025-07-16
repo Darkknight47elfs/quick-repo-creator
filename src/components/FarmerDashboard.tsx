@@ -1,11 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCamera } from "react-icons/fa";
 import { API_BASE_URL } from '../apiConfig';
 
-export default function FarmerDashboard() {
-  const [farmerData, setFarmerData] = useState(null);
-  const [selectedFarm, setSelectedFarm] = useState(null);
+interface FarmerData {
+  id: string;
+  farmer_id: string;
+  user_name: string;
+  phone_number: string;
+  padashekaram_name: string;
+  profile_image?: string;
+  farms: Farm[];
+}
+
+interface Farm {
+  id: string;
+  custom_farm_id: string;
+  rice_type: string;
+  water_source: string;
+  H_start_date: string;
+  acres: string;
+  pdfs: PDF[];
+}
+
+interface PDF {
+  farmerlatestpdf: string;
+}
+
+interface ErrorDisplayProps {
+  message: string;
+}
+
+const FarmerDashboard: React.FC = () => {
+  const [farmerData, setFarmerData] = useState<FarmerData | null>(null);
+  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -51,7 +78,7 @@ export default function FarmerDashboard() {
     navigate("/");
   };
 
-  const handleCropPerformanceClick = (id, farmId) => {
+  const handleCropPerformanceClick = (id: string, farmId: string) => {
     navigate(`/crop-performance/${id}/farm/${farmId}`);
   };
 
@@ -169,14 +196,16 @@ export default function FarmerDashboard() {
   );
 }
 
-const ErrorDisplay = ({ message }) => (
-  <div className="flex items-center justify-center min-h-screen bg-red-100">
-    <h1 className="text-xl font-bold text-red-600">{message}</h1>
+const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message }) => (
+  <div className="flex items-center justify-center min-h-screen bg-destructive/10">
+    <h1 className="text-xl font-bold text-destructive">{message}</h1>
   </div>
 );
 
-const LoadingDisplay = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <h1 className="text-xl font-bold text-gray-600">Loading...</h1>
+const LoadingDisplay: React.FC = () => (
+  <div className="flex items-center justify-center min-h-screen bg-muted">
+    <h1 className="text-xl font-bold text-muted-foreground">Loading...</h1>
   </div>
 );
+
+export default FarmerDashboard;

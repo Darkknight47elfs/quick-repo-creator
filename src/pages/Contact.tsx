@@ -1,6 +1,6 @@
 import React from "react";
 
-const Contact = () => {
+const Contact: React.FC = () => {
   return (
     <div className="flex items-center justify-center p-6 mt-5">
       <div className="w-full max-w-3xl p-8 rounded-lg shadow-md">

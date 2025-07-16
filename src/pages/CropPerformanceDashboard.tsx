@@ -15,14 +15,28 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../apiConfig';
 
-const CropPerformanceDashboard = () => {
-  const { farmerId, farmId } = useParams();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeParameter, setActiveParameter] = useState('ndvi');
-  const [trendData, setTrendData] = useState(null);
-  const [radarData, setRadarData] = useState(null);
+interface CropData {
+  [key: string]: any;
+}
+
+interface ChartData {
+  labels: string[];
+  datasets: any[];
+}
+
+interface RadarData {
+  labels: string[];
+  datasets: any[];
+}
+
+const CropPerformanceDashboard: React.FC = () => {
+  const { farmerId, farmId } = useParams<{ farmerId: string; farmId: string }>();
+  const [data, setData] = useState<CropData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeParameter, setActiveParameter] = useState<string>('ndvi');
+  const [trendData, setTrendData] = useState<ChartData | null>(null);
+  const [radarData, setRadarData] = useState<RadarData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -347,13 +361,13 @@ const CropPerformanceDashboard = () => {
                           color: 'rgba(0,0,0,0.05)',
                         },
                         ticks: {
-                          font: { weight: '500' }
+                          font: { weight: 500 }
                         }
                       },
                       x: {
                         grid: { display: false },
                         ticks: {
-                          font: { weight: '500' }
+                          font: { weight: 500 }
                         }
                       }
                     }
@@ -393,7 +407,7 @@ const CropPerformanceDashboard = () => {
                         max: 100,
                         ticks: { 
                           backdropColor: 'rgba(255, 255, 255, 0.8)',
-                          font: { weight: '500' } 
+                          font: { weight: 500 } 
                         },
                         grid: { color: 'rgba(0,0,0,0.05)' }
                       } 

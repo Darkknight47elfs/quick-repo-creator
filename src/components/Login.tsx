@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from '../apiConfig';
 
-function Login() {
+interface FormData {
+  phone_number: string;
+  otp: string;
+  password: string;
+}
+
+interface EyeIconProps {
+  showPassword: boolean;
+}
+
+const Login: React.FC = () => {
   const [userType, setUserType] = useState("department");
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     phone_number: "",
     otp: "",
     password: "",
@@ -42,23 +52,23 @@ function Login() {
     };
   }, [otpCooldown]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUserTypeChange = (type) => {
+  const handleUserTypeChange = (type: string) => {
     setUserType(type);
     if (type === "farmer") {
       setFormData(prev => ({ ...prev, password: "" }));
     }
   };
 
-  const handleCountryCodeChange = (e) => {
+  const handleCountryCodeChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setCountryCode(e.target.value);
   };
 
-  const handlePrivacyCheck = (e) => {
+  const handlePrivacyCheck = (e: ChangeEvent<HTMLInputElement>) => {
     setIsPrivacyChecked(e.target.checked);
   };
 
@@ -93,7 +103,7 @@ function Login() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true); // Set submitting state to true
 
@@ -138,7 +148,7 @@ function Login() {
     }
   };
 
-  const EyeIcon = ({ showPassword }) => (
+  const EyeIcon: React.FC<EyeIconProps> = ({ showPassword }) => (
     showPassword ? (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -359,6 +369,6 @@ function Login() {
       </div>
     </div>
   );
-}
+};
 
 export default Login;

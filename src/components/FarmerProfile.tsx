@@ -1,13 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FarmsPage from "./FarmsPage";
-import { FaCamera } from "react-icons/fa";
 import { API_BASE_URL } from '../apiConfig';
 
-export default function FarmerProfile() {
-  const { id } = useParams();
+interface FarmerData {
+  user_name: string;
+  farmer_id: string;
+  phone_number: string;
+  organization_name: string;
+  state: number | null;
+  state_choices: any[];
+  district: number | null;
+  district_choices: any[];
+  padashekaram_name: string;
+  profile_image: string | null;
+  farms: any[];
+}
+
+const FarmerProfile: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [farmerData, setFarmerData] = useState({
+  const [farmerData, setFarmerData] = useState<FarmerData>({
     user_name: "",
     farmer_id: "",
     phone_number: "",
@@ -21,8 +34,8 @@ export default function FarmerProfile() {
     farms: [],
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [showFarms, setShowFarms] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 

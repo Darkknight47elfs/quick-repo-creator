@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const Navbar = () => {
+interface NavLinkProps {
+  to: string;
+  text: string;
+}
+
+const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // MobileNavLink component inside Navigation to access state
-  const MobileNavLink = ({ to, text }) => (
+  const MobileNavLink: React.FC<NavLinkProps> = ({ to, text }) => (
     <Link
       to={to}
       className="px-4 py-2 text-gray-700 transition duration-300 rounded-md hover:bg-gray-100"
@@ -76,7 +81,7 @@ const Navbar = () => {
 };
 
 // Separate component for desktop links
-const NavLink = ({ to, text }) => (
+const NavLink: React.FC<NavLinkProps> = ({ to, text }) => (
   <Link
     to={to}
     className="px-4 py-2 text-gray-700 transition duration-300 rounded-md hover:text-white hover:bg-black"
