@@ -13,7 +13,7 @@ import ReactLeafletGoogleLayer from 'react-leaflet-google-layer';
 import axios from 'axios';
 import { API_BASE_URL } from '../apiConfig';
 
-const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const SuccessModal = ({ message, onClose, isError = false }) => {
   return (

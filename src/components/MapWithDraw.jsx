@@ -20,7 +20,7 @@ import ReactLeafletGoogleLayer from "react-leaflet-google-layer";
 import "leaflet-google-places-autocomplete";
 
 
-const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const MapWithDraw = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
   const [geojsonData, setGeojsonData] = useState(initialGeoJSON);
