@@ -9,13 +9,51 @@ import { createRoot } from 'react-dom/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSatelliteDish, faLocationArrow, faMap, faRoad } from '@fortawesome/free-solid-svg-icons';
 import ReactLeafletGoogleLayer from 'react-leaflet-google-layer';
-
 import axios from 'axios';
 import { API_BASE_URL } from '../apiConfig';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-const SuccessModal = ({ message, onClose, isError = false }) => {
+interface SuccessModalProps {
+  message: string;
+  onClose: () => void;
+  isError?: boolean;
+}
+
+interface FormData {
+  rice_type: string;
+  water_source: string;
+  H_start_date: string;
+}
+
+interface FarmMapProps {
+  farmerId: string | number;
+  accessToken?: string;
+  onFarmAdded?: (message: string) => void;
+}
+
+interface MapControlsProps {
+  fetchCurLocation: () => void;
+  cycleMapType: () => void;
+  currentMapType: string;
+  isLocating: boolean;
+}
+
+interface GooglePlacesAutocompleteProps {
+  setCurPos: (pos: [number, number]) => void;
+}
+
+interface MapControllerProps {}
+
+type MapType = 'roadmap' | 'satellite' | 'hybrid' | 'terrain';
+
+declare global {
+  interface Window {
+    L: any;
+  }
+}
+
+const SuccessModal: React.FC<SuccessModalProps> = ({ message, onClose, isError = false }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
       <div className="w-full max-w-md p-8 mx-4 bg-white rounded-lg shadow-lg">
@@ -36,53 +74,53 @@ const SuccessModal = ({ message, onClose, isError = false }) => {
   );
 };
 
-const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
-  const [geojsonData, setGeojsonData] = useState([]);
-  const [formData, setFormData] = useState({
+const FarmMap: React.FC<FarmMapProps> = ({ farmerId, accessToken, onFarmAdded }) => {
+  const [geojsonData, setGeojsonData] = useState<any[]>([]);
+  const [formData, setFormData] = useState<FormData>({
     rice_type: '',
     water_source: '',
     H_start_date: '',
   });
-  const [curPos, setCurPos] = useState([10.648021, 76.549728]);
-  const [mapType, setMapType] = useState('hybrid'); 
-  const [isLocating, setIsLocating] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const featureGroupRef = useRef();
-  const mapRef = useRef(null);
+  const [curPos, setCurPos] = useState<[number, number]>([10.648021, 76.549728]);
+  const [mapType, setMapType] = useState<MapType>('hybrid'); 
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalMessage, setModalMessage] = useState<string>('');
+  const [isError, setIsError] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const featureGroupRef = useRef<L.FeatureGroup>(null);
+  const mapRef = useRef<L.Map | null>(null);
 
   const apiEndpoint = `${API_BASE_URL}/analyze/farms/${farmerId}/`;
 
-  const closeModal = () => {
+  const closeModal = (): void => {
     setShowModal(false);
     setModalMessage('');
     setIsError(false);
   };
 
-  const handleFormChange = (e) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCreate = (e) => {
+  const handleCreate = (e: any): void => {
     const newFeature = e.layer.toGeoJSON();
     const { id, ...featureWithoutId } = newFeature;
     setGeojsonData((prevData) => [...prevData, featureWithoutId]);
   };
 
-  const handleEdit = (e) => {
-    const editedFeatures = Object.values(e.layers._layers).map((layer) => layer.toGeoJSON());
+  const handleEdit = (e: any): void => {
+    const editedFeatures = Object.values(e.layers._layers).map((layer: any) => layer.toGeoJSON());
     setGeojsonData(editedFeatures);
   };
 
-  const handleDelete = (e) => {
+  const handleDelete = (e: any): void => {
     const deletedIds = Object.keys(e.layers._layers);
-    const remainingFeatures = geojsonData.filter((feature) => !deletedIds.includes(feature.id));
+    const remainingFeatures = geojsonData.filter((feature: any) => !deletedIds.includes(feature.id));
     setGeojsonData(remainingFeatures);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     const accessToken = localStorage.getItem("token");
   
     if (!accessToken) {
@@ -103,7 +141,7 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
   
     try {
       const payload = {
-        farmer_id: parseInt(farmerId),  
+        farmer_id: parseInt(farmerId.toString()),  
         rice_type: formData.rice_type,
         water_source: formData.water_source,
         H_start_date: formData.H_start_date,
@@ -137,7 +175,7 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
       if (onFarmAdded) {
         onFarmAdded("Farm added successfully!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding farm:", error.response?.data || error.message);
       const errorMessage = error.response?.data?.detail || 
                          error.response?.data?.message || 
@@ -150,7 +188,7 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
     }
   };
 
-  const fetchCurLocation = () => {
+  const fetchCurLocation = (): void => {
     setIsLocating(true);
     
     if (!navigator.geolocation) {
@@ -161,14 +199,14 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
       return;
     }
 
-    const options = {
+    const options: PositionOptions = {
       enableHighAccuracy: true,
       timeout: 10000,
       maximumAge: 0
     };
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      (position: GeolocationPosition) => {
         const { latitude, longitude } = position.coords;
         setCurPos([latitude, longitude]);
         
@@ -178,7 +216,7 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
         
         setIsLocating(false);
       },
-      (error) => {
+      (error: GeolocationPositionError) => {
         setIsLocating(false);
         let errorMessage = 'Could not fetch your location.';
         
@@ -205,14 +243,14 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
   };
 
   // Cycle through map types
-  const cycleMapType = () => {
-    const types = ['roadmap', 'satellite', 'hybrid', 'terrain'];
+  const cycleMapType = (): void => {
+    const types: MapType[] = ['roadmap', 'satellite', 'hybrid', 'terrain'];
     const currentIndex = types.indexOf(mapType);
     const nextIndex = (currentIndex + 1) % types.length;
     setMapType(types[nextIndex]);
   };
 
-  const MapController = () => {
+  const MapController: React.FC<MapControllerProps> = () => {
     const map = useMap();
     mapRef.current = map;
     
@@ -341,7 +379,7 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
   );
 };
 
-const MapControls = ({ fetchCurLocation, cycleMapType, currentMapType, isLocating }) => {
+const MapControls: React.FC<MapControlsProps> = ({ fetchCurLocation, cycleMapType, currentMapType, isLocating }) => {
   const map = useMap();
 
   const getMapTypeIcon = () => {
@@ -354,14 +392,14 @@ const MapControls = ({ fetchCurLocation, cycleMapType, currentMapType, isLocatin
     }
   };
 
-  const getMapTypeTitle = () => {
+  const getMapTypeTitle = (): string => {
     return `Current: ${currentMapType.charAt(0).toUpperCase() + currentMapType.slice(1)} - Click to change`;
   };
 
   useEffect(() => {
     const customControl = L.control({ position: 'topright' });
 
-    customControl.onAdd = () => {
+    customControl.onAdd = function() {
       const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
       div.style.backgroundColor = 'white';
       div.style.padding = '5px';
@@ -397,24 +435,26 @@ const MapControls = ({ fetchCurLocation, cycleMapType, currentMapType, isLocatin
     };
 
     customControl.addTo(map);
-    return () => map.removeControl(customControl);
+    return () => {
+      map.removeControl(customControl);
+    };
   }, [map, fetchCurLocation, cycleMapType, currentMapType, isLocating]);
 
   return null;
 };
 
 // Google Places Autocomplete Control
-const GooglePlacesAutocomplete = ({ setCurPos }) => {
+const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({ setCurPos }) => {
   const map = useMap();
 
   useEffect(() => {
     if (!window.L.Control.GPlaceAutocomplete) return;
 
     const control = new window.L.Control.GPlaceAutocomplete({
-      callback: function (place) {
+      callback: function (place: any) {
         if (place && place.geometry && place.geometry.location) {
           const loc = place.geometry.location;
-          const latLng = [loc.lat(), loc.lng()];
+          const latLng: [number, number] = [loc.lat(), loc.lng()];
           setCurPos(latLng);
           map.setView(latLng, 18);
         }
@@ -425,7 +465,9 @@ const GooglePlacesAutocomplete = ({ setCurPos }) => {
 
     map.addControl(control);
     return () => {
-      map.removeControl(control);
+      if (map.hasLayer && map.hasLayer(control)) {
+        map.removeControl(control);
+      }
     };
   }, [map, setCurPos]);
 

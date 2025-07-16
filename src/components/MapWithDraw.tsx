@@ -19,23 +19,47 @@ import {
 import ReactLeafletGoogleLayer from "react-leaflet-google-layer";
 import "leaflet-google-places-autocomplete";
 
+interface MapWithDrawProps {
+  onGeoJSONUpdate: (featureCollection: any) => void;
+  initialGeoJSON?: any[];
+}
+
+interface MapCenterProps {
+  pos: [number, number];
+}
+
+interface MapControlsProps {
+  fetchCurLocation: () => void;
+  toggleSatellite: () => void;
+}
+
+interface GooglePlacesAutocompleteProps {
+  setCurPos: (pos: [number, number] | null) => void;
+}
+
+declare global {
+  interface Window {
+    L: any;
+  }
+}
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-const MapWithDraw = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
-  const [geojsonData, setGeojsonData] = useState(initialGeoJSON);
-  const [isSatellite, setIsSatellite] = useState(true);
-  const [curPos, setCurPos] = useState(null);
+const MapWithDraw: React.FC<MapWithDrawProps> = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
+  const [geojsonData, setGeojsonData] = useState<any[]>(initialGeoJSON);
+  const [isSatellite, setIsSatellite] = useState<boolean>(true);
+  const [curPos, setCurPos] = useState<[number, number] | null>(null);
 
-  const wrapAsFeatureCollection = (features) => ({
+  const wrapAsFeatureCollection = (features: any[]): any => ({
     type: "FeatureCollection",
     features,
   });
 
-  const getGeoJSONCenter = (geojson) => {
+  const getGeoJSONCenter = (geojson: any[]): [number, number] | null => {
     if (!geojson || geojson.length === 0) return null;
     const bounds = L.geoJSON(geojson).getBounds();
-    return bounds.getCenter();
+    const center = bounds.getCenter();
+    return [center.lat, center.lng];
   };
 
   useEffect(() => {
@@ -46,12 +70,12 @@ const MapWithDraw = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
     }
   }, [initialGeoJSON]);
 
-  const fetchCurLocation = useCallback(() => {
+  const fetchCurLocation = useCallback((): void => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        ({ coords: { latitude, longitude } }) =>
+        ({ coords: { latitude, longitude } }: GeolocationPosition) =>
           setCurPos([latitude, longitude]),
-        (err) => {
+        (err: GeolocationPositionError) => {
           console.error("Error fetching location:", err);
           alert("Unable to fetch location.");
         }
@@ -62,7 +86,7 @@ const MapWithDraw = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
   }, []);
 
   const updateGeoJSON = useCallback(
-    (newFeatures) => {
+    (newFeatures: any[]): void => {
       const featureCollection = wrapAsFeatureCollection(newFeatures);
       setGeojsonData(featureCollection.features);
       onGeoJSONUpdate(featureCollection);
@@ -72,17 +96,19 @@ const MapWithDraw = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
     [onGeoJSONUpdate]
   );
 
-  const handleCreate = (e) =>
+  const handleCreate = (e: any): void =>
     updateGeoJSON([...geojsonData, e.layer.toGeoJSON()]);
-  const handleEdit = (e) =>
+  
+  const handleEdit = (e: any): void =>
     updateGeoJSON(
-      geojsonData.map((geoJson) =>
+      geojsonData.map((geoJson: any) =>
         geoJson.id === e.layer._leaflet_id ? e.layer.toGeoJSON() : geoJson
       )
     );
-  const handleDelete = (e) =>
+  
+  const handleDelete = (e: any): void =>
     updateGeoJSON(
-      geojsonData.filter((geoJson) => geoJson.id !== e.layer._leaflet_id)
+      geojsonData.filter((geoJson: any) => geoJson.id !== e.layer._leaflet_id)
     );
 
   return (
@@ -142,7 +168,7 @@ const MapWithDraw = ({ onGeoJSONUpdate, initialGeoJSON = [] }) => {
 };
 
 // Center map when pos changes
-const MapCenter = ({ pos }) => {
+const MapCenter: React.FC<MapCenterProps> = ({ pos }) => {
   const map = useMap();
   useEffect(() => {
     map.setView(pos, map.getZoom());
@@ -151,13 +177,13 @@ const MapCenter = ({ pos }) => {
 };
 
 // Custom controls (current location, satellite toggle)
-const MapControls = ({ fetchCurLocation, toggleSatellite }) => {
+const MapControls: React.FC<MapControlsProps> = ({ fetchCurLocation, toggleSatellite }) => {
   const map = useMap();
 
   useEffect(() => {
     const customControl = L.control({ position: "topright" });
 
-    customControl.onAdd = () => {
+    customControl.onAdd = function() {
       const div = L.DomUtil.create(
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom"
@@ -192,24 +218,26 @@ const MapControls = ({ fetchCurLocation, toggleSatellite }) => {
     };
 
     customControl.addTo(map);
-    return () => map.removeControl(customControl);
+    return () => {
+      map.removeControl(customControl);
+    };
   }, [map, fetchCurLocation, toggleSatellite]);
 
   return null;
 };
 
 // Google Places Autocomplete Control
-const GooglePlacesAutocomplete = ({ setCurPos }) => {
+const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({ setCurPos }) => {
   const map = useMap();
 
   useEffect(() => {
     if (!window.L.Control.GPlaceAutocomplete) return;
 
     const control = new window.L.Control.GPlaceAutocomplete({
-      callback: function (place) {
+      callback: function (place: any) {
         if (place && place.geometry && place.geometry.location) {
           const loc = place.geometry.location;
-          const latLng = [loc.lat(), loc.lng()];
+          const latLng: [number, number] = [loc.lat(), loc.lng()];
           setCurPos(latLng);
           map.setView(latLng, 18);
         }
@@ -220,7 +248,9 @@ const GooglePlacesAutocomplete = ({ setCurPos }) => {
 
     map.addControl(control);
     return () => {
-      map.removeControl(control);
+      if (map.hasLayer && map.hasLayer(control)) {
+        map.removeControl(control);
+      }
     };
   }, [map, setCurPos]);
 

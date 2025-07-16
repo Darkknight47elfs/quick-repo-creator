@@ -3,7 +3,43 @@ import { useNavigate, Link } from "react-router-dom";
 import FarmMap from "./FarmMap";
 import { API_BASE_URL } from '../apiConfig';
 
-const SuccessModal = ({ message, onClose, isError = false }) => {
+interface SuccessModalProps {
+  message: string;
+  onClose: () => void;
+  isError?: boolean;
+}
+
+interface FarmerForm {
+  user_name: string;
+  phone_number: string;
+  state: string;
+  district: string;
+  organization_name: string;
+  padashekaram_name: string;
+}
+
+interface State {
+  id: number;
+  name: string;
+}
+
+interface District {
+  id: number;
+  name: string;
+}
+
+interface Farmer {
+  id: number;
+  farmer_id: string;
+  profile_image?: string;
+}
+
+interface StaffData {
+  user_name: string;
+  added_farmers?: Farmer[];
+}
+
+const SuccessModal: React.FC<SuccessModalProps> = ({ message, onClose, isError = false }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-md p-8 mx-4 bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in fade-in duration-300">
@@ -37,11 +73,11 @@ const SuccessModal = ({ message, onClose, isError = false }) => {
   );
 };
 
-export default function StaffDashboard() {
-  const [staffData, setStaffData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [farmerForm, setFarmerForm] = useState({
+export default function StaffDashboard(): JSX.Element {
+  const [staffData, setStaffData] = useState<StaffData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [farmerForm, setFarmerForm] = useState<FarmerForm>({
     user_name: "",
     phone_number: "",
     state: "",
@@ -49,25 +85,25 @@ export default function StaffDashboard() {
     organization_name: "",
     padashekaram_name: "",
   });
-  const [states, setStates] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [currentFarmerId, setCurrentFarmerId] = useState(null); 
-  const [farmData, setFarmData] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [states, setStates] = useState<State[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [currentFarmerId, setCurrentFarmerId] = useState<number | null>(null); 
+  const [farmData, setFarmData] = useState<any>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalMessage, setModalMessage] = useState<string>('');
+  const [isError, setIsError] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
-  const closeModal = () => {
+  const closeModal = (): void => {
     setShowModal(false);
     setModalMessage('');
     setIsError(false);
   };
 
   useEffect(() => {
-    const fetchStaffData = async () => {
+    const fetchStaffData = async (): Promise<void> => {
       const accessToken = localStorage.getItem("token");
 
       if (!accessToken) {
@@ -91,7 +127,7 @@ export default function StaffDashboard() {
           throw new Error(`Error fetching data: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data: StaffData = await response.json();
         setStaffData(data);
       } catch (error) {
         setError("Failed to load staff data.");
@@ -105,7 +141,7 @@ export default function StaffDashboard() {
 
   // Fetch states and districts
   useEffect(() => {
-    const fetchStatesAndDistricts = async () => {
+    const fetchStatesAndDistricts = async (): Promise<void> => {
       try {
         const statesResponse = await fetch(
           `${API_BASE_URL}/api/states/`
@@ -118,8 +154,8 @@ export default function StaffDashboard() {
           throw new Error("Failed to fetch states or districts");
         }
 
-        const statesData = await statesResponse.json();
-        const districtsData = await districtsResponse.json();
+        const statesData: State[] = await statesResponse.json();
+        const districtsData: District[] = await districtsResponse.json();
 
         setStates(statesData);
         setDistricts(districtsData);
@@ -131,12 +167,12 @@ export default function StaffDashboard() {
     fetchStatesAndDistricts();
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     setFarmerForm({ ...farmerForm, [name]: value });
   };
 
-  const formatErrorMessage = (errorData) => {
+  const formatErrorMessage = (errorData: any): string => {
     if (typeof errorData === 'string') return errorData;
     
     if (Array.isArray(errorData)) {
@@ -166,7 +202,7 @@ export default function StaffDashboard() {
     return "Unknown error occurred. Please try again.";
   };
 
-  const handleRegisterFarmer = async () => {
+  const handleRegisterFarmer = async (): Promise<void> => {
     setIsSubmitting(true);
     const accessToken = localStorage.getItem("token");
   
@@ -211,7 +247,7 @@ export default function StaffDashboard() {
 
         // Update staff data with the new farmer
         setStaffData((prevData) => ({
-          ...prevData,
+          ...prevData!,
           added_farmers: [...(prevData?.added_farmers || []), responseData],
         }));
       } else {
@@ -231,7 +267,7 @@ export default function StaffDashboard() {
   };
 
   // This function would be called when farm details are successfully added
-  const handleFarmAddedSuccess = (message) => {
+  const handleFarmAddedSuccess = (message: string): void => {
     setModalMessage(message);
     setIsError(false);
     setShowModal(true);
@@ -339,7 +375,7 @@ export default function StaffDashboard() {
                     onChange={handleInputChange}
                     placeholder="Enter phone number"
                     className="w-full p-3 sm:p-4 pl-10 sm:pl-12 bg-white/50 focus:outline-none text-sm sm:text-base"
-                    maxLength="10"
+                    maxLength={10}
                   />
                   <svg className="absolute left-3 sm:left-4 top-3 sm:top-4 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -398,7 +434,7 @@ export default function StaffDashboard() {
                 </svg>
               </div>
             </div>
-    
+
             <div className="group">
               <label className="block text-sm font-semibold text-gray-700 mb-2">Organization</label>
               <div className="relative">
@@ -464,7 +500,7 @@ export default function StaffDashboard() {
               <div className="aspect-[16/10] sm:aspect-[16/9] lg:aspect-[2/1] xl:aspect-[3/2] min-h-[300px] sm:min-h-[400px] lg:min-h-[450px]">
                 <div className="absolute inset-0 w-full h-full">
                   <FarmMap 
-                    farmerId={currentFarmerId} 
+                    farmerId={currentFarmerId || 0} 
                     key={currentFarmerId} 
                     onFarmAdded={handleFarmAddedSuccess} 
                   />
@@ -487,7 +523,7 @@ export default function StaffDashboard() {
               </div>
             </div>
             
-            {staffData?.added_farmers?.length > 0 ? (
+            {staffData?.added_farmers?.length ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {staffData.added_farmers.map((farmer, index) => (
                   <Link
