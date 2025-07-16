@@ -275,16 +275,21 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
 
       {/* Map Container */}
       <div className="w-[75%] h-screen">
-        <MapContainer center={curPos} zoom={18} style={{ height: '75%', width: '100%' }}>
+        <MapContainer 
+          center={curPos} 
+          zoom={18} 
+          style={{ height: '75%', width: '100%' }}
+          key={`${curPos[0]}-${curPos[1]}`}
+        >
           <MapController />
           
-          {/* Google Maps Layer */}
-          <ReactLeafletGoogleLayer
-            apiKey={GOOGLE_MAPS_API_KEY}
-            type={mapType}
-          />
+          {GOOGLE_MAPS_API_KEY && (
+            <ReactLeafletGoogleLayer
+              apiKey={GOOGLE_MAPS_API_KEY}
+              type={mapType}
+            />
+          )}
 
-          {/* Bhuvan WMS Layer */}
           <WMSTileLayer
             url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/gwc/service/wms"
             layers="cadastral:cadastral_india"
@@ -293,10 +298,8 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
             opacity={mapType === 'roadmap' ? 0.6 : 0.3}
           />
 
-          {/* Google Places Search */}
           <GooglePlacesAutocomplete setCurPos={setCurPos} />
 
-          {/* Map Controls */}
           <MapControls 
             fetchCurLocation={fetchCurLocation} 
             cycleMapType={cycleMapType}
@@ -304,12 +307,10 @@ const FarmMap = ({ farmerId, accessToken, onFarmAdded }) => {
             isLocating={isLocating}
           />
 
-          {/* Render GeoJSON features */}
-          {geojsonData.map((geoJson, index) => (
-            <GeoJSON key={index} data={geoJson} />
+          {geojsonData.length > 0 && geojsonData.map((geoJson, index) => (
+            <GeoJSON key={`geojson-${index}`} data={geoJson} />
           ))}
 
-          {/* Drawing controls */}
           <FeatureGroup ref={featureGroupRef}>
             <EditControl
               position="topright"
