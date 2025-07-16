@@ -121,9 +121,10 @@ const FarmerProfile: React.FC = () => {
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const imageUrl = URL.createObjectURL(file);
       setFarmerData({ ...farmerData, profile_image: imageUrl });
       uploadImage(file);
@@ -236,7 +237,9 @@ const FarmerProfile: React.FC = () => {
               }}
             />
             <label className="absolute p-1.5 md:p-2 bg-gray-800 rounded-full cursor-pointer bottom-0 md:bottom-2 right-0 md:right-2">
-              <FaCamera className="text-xs text-white md:text-base" />
+              <svg className="w-3 h-3 text-white md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              </svg>
               <input
                 type="file"
                 className="hidden"
@@ -378,4 +381,6 @@ const FarmerProfile: React.FC = () => {
       )} */}
     </div>
   );
-}
+};
+
+export default FarmerProfile;
